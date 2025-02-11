@@ -1,0 +1,287 @@
+<div>
+    <table border="1" style="width:100%; height:20%; border-collapse: collapse;">
+        <tr style="font-size:11px" class="head">
+            <td style="line-height: 12px"><b>SALE INVOICE</b></td>
+        </tr>
+    </table>
+    <table border="1" style="width:100%">
+        <tr>
+            <td>
+                
+                <div style="padding-top: 10px" {% if print_settings.repeat_header_footer %} id="header-html" {% endif %}>
+			      	{{ letter_head }}
+                </div>
+            </td>
+        </tr>
+    </table>
+   
+   {% set cst = frappe.get_doc('Customer', doc.customer)%}
+     {% set cmp = frappe.get_doc('Company', doc.company)%}
+    <table border="1" style="width:100%; border-collapse: collapse;">
+        <tr style="font-size:11px">
+            <td class="color" style="width:33%; text-align:center; line-height:10px;"><b>OUR GSTIN:</b>{{doc.company_gstin}} </td>
+            <td class="color" style="width:33%; text-align:center; line-height:10px;"><b>OUR PAN:</b>{{cmp.pan}} </td>
+            <td class="color" style="width:33%; text-align:center; line-height:10px;"><b>MSME NO:</b></td>
+        </tr>
+    </table>
+    {% set address = frappe.get_doc('Address', doc.customer_address)%}
+    {% set cst = frappe.get_doc('Customer', doc.customer)%}
+    
+    <table border="1" style="width:100%; border-collapse: collapse;">
+        <tr style="font-size:11px">
+            <td style="width:40%" rowspan="6"><strong class="green"><b>Buyer/Billing Details</b></strong></br><b>{{address.address_title}}</b> </br>
+            Address:{% if address.address_line1%}
+            {{address.address_line1}}
+            {% else %}
+            <p> </p>
+            {% endif %}
+            
+            {% if address.address_line2%}
+            {{address.address_line2}}
+            {% else %}
+            <p> </p>
+            {% endif %} </br>
+            
+            State:{{address.state}} , Country:{{address.country}} </br>
+            Ph No.{{address.phone}} , Email:{{address.email_id}} </br>
+             GSTIN:{{address.gstin}} , PAN:{{cst.pan}}
+            </td>
+            <td style="width:60%; line-height:10px;" colspan="2" class="green"><b>We thank you very much for the interest shows in our product.</b></td>
+                
+        </tr>  
+        <tr  style="font-size:11px">
+            <td style="width:28%; line-height:10px;"><b>Invoice No.&nbsp;</b> {% if doc.name%}{{ doc.name }}{% else %}{% endif %}</td>
+            <td style="width:22%; line-height:8px;"><b>Invoice Date:&nbsp;</b> {% if doc.posting_date%}{{ doc.posting_date}}{% else %}{% endif %}</td>
+        </tr>
+        <tr style="font-size:11px">
+            <td style="width:23%; line-height:10px;"><b>PO Order No:&nbsp;</b>{% if doc.po_no%}{{doc.po_no}}{% else %}{% endif %}</td>
+            <td style="width:25%; line-height:8px;"><b>PO Order Date:&nbsp;</b>{% if doc.po_date%}{{doc.po_date}}{% else %}{% endif %}</td>
+        </tr>
+        <tr style="font-size:11px">
+    <td style="width:28%; line-height:10px;">
+        <b>SO Ref No:&nbsp;</b>
+        {%- set sales_orders = [] -%}
+        {%- for row in doc.items -%}
+            {% if row.sales_order and row.sales_order not in sales_orders %}
+                {{ row.sales_order }}{% if not loop.last %}, {% endif %}
+                {% set _ = sales_orders.append(row.sales_order) %}
+            {% endif %}
+        {%- endfor -%}
+    </td>
+    
+    <td style="width:22%; line-height:10px;">
+        <b>SO Ref Date:&nbsp;</b>
+        {%- for so in sales_orders -%}
+            {% set sales = frappe.get_doc('Sales Order', so) %}
+            {{ sales.transaction_date }}{% if not loop.last %}, {% endif %}
+        {%- endfor -%}
+    </td>
+    </tr>
+
+        <tr style="font-size:11px" >
+            <td colspan="2" class="green" style="line-height:10px"><b>Contact Person/Mob: Sebastian juje Fernandes/9175915084</b></td>
+        </tr>
+        {% if doc.shipping_address_name%}
+        {% set supaddress = frappe.get_doc('Address', doc.shipping_address_name)%}
+        {% set contact = frappe.get_doc('Contact', doc.contact)%}
+        <tr style="font-size:11px">
+            <td colspan="2"><strog class="green"><b>Consigee/Delivery Detail</b></strog></br><b>{% if doc.shipping_address_name%}{{doc.shipping_address_name}} {% else %} {% endif %}</b></br>
+            Address:{% if supaddress.address_line1%}
+            {{supaddress.address_line1}}
+            {% else %}
+            <p> </p>
+            {% endif %}
+            
+            {% if supaddress.address_line2%}
+            {{supaddress.address_line2}}
+            {% else %}
+            <p> </p>
+            {% endif %} </br>
+            Phone No.{{supaddress.phone}} </br>
+            State:{{supaddress.state}}&nbsp;&nbsp; Contact:{{doc.contact_person}}&nbsp;{{contact.mobile_no}} </br>
+            Pin:{{supaddress.pincode}} </br>
+            </td>
+        </tr>
+        {% else %}{% endif %}
+    </table>
+   
+    <table border="1" style="width:100%; border-collapse: collapse;">
+        <tr style="font-size:11px" >
+            <th style="width:6%;text-align:center;">SR.NO</th>
+            <th style="text-align:center">Product & Details</th>
+            <th style="width:12%;text-align:center;">HSN Code</th>
+            <th style="width:15%;text-align:center;"> QTY/UNIT</th>
+            <th style="width:10%;text-align:center;">Rate</th>
+            <th style="width:8%;text-align:center;">GST%</th>
+            <th style="width:12%;text-align:center;">Amount(INR)</th>
+        </tr>
+         {%- for row in doc.items -%}
+        <tr style="font-size:11px" >
+            <td style="text-align:center">{{row.idx}}</td>
+            <td>{{row.description}}</td>
+            <td style="text-align:center">{{row.gst_hsn_code}}</td>
+            <td style="text-align:center">{{row.qty}}({{row.uom}})</td>
+            <td style="text-align:center">{{row.rate}}</td>
+            <td style="text-align:center">
+            {%- if row.item_tax_template -%}
+            {{ row.item_tax_template.split(' ')[1] if ' ' in row.item_tax_template else row.item_tax_template }}
+            {%- endif -%}
+            </td>
+
+            <td style="text-align:right">{{row.base_amount}}</td>
+        </tr>
+        {%- endfor -%}
+        
+        {% set sum = doc.items|length %}
+         {% if sum >= 1 and sum <= 3%}
+         <tr style="border; height:150px;">
+        {% for _ in range(7) %}
+            <td class="" style="border-right :1px solid black; border-left :1px solid black;"></td>
+        {% endfor %}
+        </tr>
+        {% endif %}
+        <tr style="font-size:11px">
+            <td colspan="3" style="text-align:right">Total QTY</td>
+            <td colspan="1" style="text-align:right">{{doc.total_qty}}</td>
+            <td colspan="2" style="text-align:right">Total Amount</td>
+            <td colspan="1" style="text-align:right">{{doc.total}}</td>
+           
+        </tr>
+    </table>
+    <table border="1" style="width:100%; border-collapse: collapse;">
+        <tr style="font-size:11px">
+            <td style="width:15%; line-height:10px;">
+                <b>E-Way Bill No:</b>
+            </td>
+            <td style="width:40%; line-height:10px;" >
+                
+            </td>
+                
+            <td style="width:10%; text-align:right; line-height:10px; border-right:none;" >
+                <b>Sub Total:</b>
+            </td>
+            
+            <td style="width:15%; text-align:right; line-height:10px;" >
+            {{doc.total}}
+            </td>
+        </tr>
+      
+        <tr style="font-size:11px">
+            <td style="width:15%; line-height:10px;">
+                <b>Payment Terms:</b>
+            </td>
+            <td style="width:40%; line-height:10px;">
+                {{doc.payment_terms_template}}
+            </td>
+            <td style="width:10%; text-align:right; line-height:10px; border-right:none" >
+                {% for row in doc.taxes %}
+               {% if row.description == "CGST" and row.tax_amount_after_discount_amount %}
+             <b>CGST:</b> 
+           
+             {% else %}
+             <b> </b> 
+               {% endif %}
+        {% endfor %}
+            </td>
+           
+            <td style="width:10%; text-align:right; line-height:10px;" >
+                {% for row in doc.taxes %}
+             {% if row.description == "CGST" and row.tax_amount_after_discount_amount %}
+                {{ row.get_formatted("tax_amount_after_discount_amount", doc) | replace(",", "") | replace("-", "")|replace ("₹"," ") }}
+                {% else %}
+                <b></b>
+             {% endif %}
+        {% endfor %}
+            </td>
+        </tr>
+        <tr style="font-size:11px" >
+            <td style="width:15%; line-height:10px;">
+                <b>Delivery Terms:</b>
+            </td>
+            <td style="width:40%; line-height:10px;">
+                
+            </td>
+            <td style="width:10%; text-align:right; line-height:10px; border-right:none ">
+                {% for row in doc.taxes %}
+               {% if row.description == "SGST" and row.tax_amount_after_discount_amount %}
+             <b>SGST:</b><br> 
+             {% else %}
+              <b> </b>
+             {% endif %}
+        {% endfor %}
+            </td>
+            
+            <td style="width:10%; text-align:right; line-height:10px;">
+                {% for row in doc.taxes %}
+             {% if row.description == "SGST" and row.tax_amount_after_discount_amount %}
+                {{ row.get_formatted("tax_amount_after_discount_amount", doc) | replace(",", "") | replace("-", "")|replace ("₹"," ") }} 
+                {% else %}
+                
+                 <b></b>
+             {% endif %}
+        {% endfor %}
+            </td>
+        </tr>
+         <tr style="font-size:11px">
+             <td style="width:15%; line-height:10px;">
+                <b>Dspach Through:</b>
+            </td>
+            <td style="width:40%; line-height:10px;">
+                
+            </td>
+            <td style="width:10%; text-align:right; line-height:10px; border-right:none">
+                <b>RoundOff:</b>
+            </td>
+            
+            <td style="width:5%; text-align:right; line-height:10px;">
+                 {{doc.rounding_adjustment}}
+            </td>
+        </tr>
+        <tr style="font-size:11px">
+            <td style="width:15%; line-height:10px;">
+                <b>Destination:</b>
+            </td>
+            <td style="width:40%; line-height:10px;">
+                
+            </td>
+            <td style="width:10%; text-align:right; line-height:10px; border-right:none"><b>Total:</b></td>
+            <td style="width:10%; text-align:right; line-height:10px;">{{doc.rounded_total}}</td>
+        </tr>
+        <tr style="font-size:11px" >
+            <td class="green" style="line-height:11px; line-height: 10px;" colspan="4"><b>Total Amount(In Words):{{doc.in_words}}</b></td>
+        </tr>
+    
+    <table border="1" style="width:100%; border-collapse: collapse;">
+        {% for bank in frappe.get_all('Bank Account', filters={'is_company_account': 1}, fields=['bank', 'branch_code','bank_account_no','account_name','account_type']) %}
+        <tr style="font-size:11px">
+            <td style="width:50%" rowspan="3"><b class="green"><b>Company Bank Details:</b></b></br>
+            <b>Name:</b>&nbsp;&nbsp;{{bank.account_name}}</br>
+            <b>Bank Name:</b>&nbsp;&nbsp;{{bank.bank}}</br>
+            <b>A/C No.:</b>&nbsp;&nbsp;{{bank.bank_account_no}}</br>
+            <b>A/C Type:</b>&nbsp;&nbsp;{{bank.account_type}}</br>
+            <b>IFSC Code:</b>&nbsp;&nbsp;{{bank.branch_code}}
+            </td>
+            <td style="width:20%; line-height:10px;" class="green"><b>Receiver Name:</b></td>
+            <td style="width:30%; line-height:10px;"></td>
+        </tr>
+         {% endfor %}
+        <tr style="font-size:11px">
+            <td style="width:20%; line-height:10px;" class="green"><b>Receiver Phone:</b></td>
+            <td style="width:30%; line-height:10px;"></td>
+        </tr>
+        <tr style="font-size:11px">
+            <td style="width:50%; line-height:10px;" colspan="2" class="green"><b>Receiver Sign:</b></td>
+        </tr>
+    </table>
+     <table border="1" style="width:100%; border-collapse: collapse;">
+    <tr style="font-size:11px">
+        <td style="width:70%; vertical-align:top;">
+            <b>Terms and Conditions:</b> {{doc.terms}}
+        </td>
+         <td style="width:30%; text-align:right;"  class="border" class="color"><b>For SP CONCARE PVT. LTD.</b>
+            </br></br></br></br></br></br></br></br></br><strong style="text-align:right">Authorized Signature</strong>
+         </td>
+        </tr>
+</table>
+  
+</div>
